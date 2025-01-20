@@ -7,11 +7,14 @@ const tutorialSchema = new mongoose.Schema({
         type: String, required: true
     },
     description: {
-        type: String
+        type: String, enum: ['With Equipment', 'Without Equipment'], required: true
     },
     category: {
         type: String, enum: ['Beginner', 'Intermediate', 'Advanced'], required: true
     },
-});
+    type: {
+        type: String, enum: ['Strength', 'Flexibility', 'Yoga', 'Pilates'], required: true
+    }
+}, {collection: 'Tutorials'});
 
 module.exports = mongoose.model('Tutorial', tutorialSchema);
