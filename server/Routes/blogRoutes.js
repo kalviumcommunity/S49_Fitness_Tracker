@@ -119,4 +119,76 @@ router.post('/blogs/:blogId/comments', async (req, res) => {
    }
 });
 
+
+// Update the blogg!!!!
+router.put('/blogs/:blogId', async (req, res) => {
+    try {
+        const { blogId } = req.params;
+        const { title, content } = req.body;
+
+        const updatedBlog = await Blog.findByIdAndUpdate(
+            blogId,
+            {
+                title,
+                content
+            },
+            { new: true } // Returns the updated document
+        ).populate('authorId', 'name email');
+
+        if (!updatedBlog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        res.status(200).json({
+            message: 'Blog updated successfully',
+            blog: updatedBlog
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error updating blog',
+            error: error.message
+        });
+    }
+});
+
+
+// If u f*** up the comment
+router.put('/blogs/:blogId/comments/:commentId', async (req, res) => {
+    try {
+        const { blogId, commentId } = req.params;
+        const { comment } = req.body;
+
+        const blog = await Blog.findById(blogId);
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        // Find and update the specific comment
+        const commentToUpdate = blog.comments.id(commentId);
+        if (!commentToUpdate) {
+            return res.status(404).json({ message: 'Comment not found' });
+        }
+
+        commentToUpdate.comment = comment;
+        await blog.save();
+
+        const updatedBlog = await Blog.findById(blogId)
+            .populate('authorId', 'name email')
+            .populate('comments.userId', 'name email');
+
+        res.status(200).json({
+            message: 'Comment updated successfully',
+            blog: updatedBlog
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error updating comment',
+            error: error.message
+        });
+    }
+});
+
+
 module.exports = router;
