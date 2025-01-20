@@ -65,4 +65,76 @@ router.post('/accounts', async (req, res) => {
     }
 });
 
+// Maybe they reduced weight or they f***ed up their name
+router.put('/users/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const { name, email, age, gender, weight, height, profileImage, password } = req.body;
+
+        // Create update object
+        const updateData = {
+            name,
+            email,
+            age,
+            gender,
+            weight,
+            height,
+            profileImage
+        };
+
+        // If password is provided, hash it
+        if (password) {
+            const salt = await bcrypt.genSalt(10);
+            updateData.password = await bcrypt.hash(password, salt);
+        }
+
+        // Remove undefined fields
+        Object.keys(updateData).forEach(key => 
+            updateData[key] === undefined && delete updateData[key]
+        );
+
+        // Check if email is being updated and if it already exists
+        if (email) {
+            const emailExists = await User.findOne({ 
+                email, 
+                _id: { $ne: userId } 
+            });
+            if (emailExists) {
+                return res.status(400).json({ 
+                    message: 'Email already in use' 
+                });
+            }
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            updateData,
+            { 
+                new: true,
+                runValidators: true 
+            }
+        ).select('-password'); // Exclude password from response
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        res.status(200).json({
+            message: 'User updated successfully',
+            user: updatedUser
+        });
+
+    } catch (error) {
+        if (error.name === 'ValidationError') {
+            return res.status(400).json({ 
+                message: 'Validation Error', 
+                error: error.message 
+            });
+        }
+        res.status(500).json({
+            message: 'Error updating user',
+            error: error.message
+        });
+    }
+});
 module.exports = router;
