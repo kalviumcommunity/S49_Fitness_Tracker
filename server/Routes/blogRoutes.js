@@ -119,5 +119,4 @@ router.post('/blogs/:blogId/comments', async (req, res) => {
    }
 });
 
-
 module.exports = router;
