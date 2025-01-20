@@ -1,3 +1,4 @@
+const mongoose = require('mongoose'); 
 const blogSchema = new mongoose.Schema({
     authorId: {
         type: mongoose.Schema.Types.ObjectId, ref: 'User',
@@ -33,6 +34,6 @@ const blogSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-});
+}, {collection: 'Blogs'});
 
 module.exports = mongoose.model('Blog', blogSchema);
