@@ -1,3 +1,4 @@
+const mongoose = require('mongoose'); 
 const workoutSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -12,6 +13,6 @@ const workoutSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-});
+}, { collection: 'Workouts' });
 
 module.exports = mongoose.model('Workout', workoutSchema);
