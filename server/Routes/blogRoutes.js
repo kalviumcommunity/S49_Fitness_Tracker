@@ -190,5 +190,62 @@ router.put('/blogs/:blogId/comments/:commentId', async (req, res) => {
     }
 });
 
+// if u want to delete the comment cuz u didn't mean it
+router.delete('/blogs/:blogId/comments/:commentId', async (req, res) => {
+    try {
+        const { blogId, commentId } = req.params;
+
+        // Find the blog and update it by pulling the specific comment
+        const blog = await Blog.findByIdAndUpdate(
+            blogId,
+            {
+                $pull: { comments: { _id: commentId } }
+            },
+            { new: true } // Return the updated document
+        );
+
+        if (!blog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        res.status(200).json({
+            message: 'Comment deleted successfully',
+            blog
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error deleting comment',
+            error: error.message
+        });
+    }
+});
+
+// Delete the blog !
+router.delete('/blogs/:blogId', async (req, res) => {
+    try {
+        const { blogId } = req.params;
+        
+        const deletedBlog = await Blog.findByIdAndDelete(blogId);
+        
+        if (!deletedBlog) {
+            return res.status(404).json({ message: 'Blog not found' });
+        }
+
+        res.status(200).json({
+            message: 'Blog deleted successfully'
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            message: 'Error deleting blog',
+            error: error.message
+        });
+    }
+});
+
+
+
+
 
 module.exports = router;
